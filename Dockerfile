@@ -30,20 +30,23 @@ RUN sh -c 'echo "deb http://packages.ros.org/ros/ubuntu $(lsb_release -sc) main"
 RUN rosdep init || true && rosdep update
 
 # ------------------------------------------------------------
-# Create default user 'phantom' with build-time UID/GID
+# Create default user 'root' with build-time UID/GID
 # ------------------------------------------------------------
-ARG USERNAME=phantom
+ARG USERNAME=root
 ARG USER_UID=1000
 ARG USER_GID=1000
 
-RUN groupadd --gid $USER_GID $USERNAME \
-    && useradd --uid $USER_UID --gid $USER_GID -m $USERNAME \
-    && usermod -aG sudo $USERNAME
+# Only create user/group if not root (root already exists)
+RUN if [ "$USERNAME" != "root" ]; then \
+        groupadd --gid $USER_GID $USERNAME || true \
+        && useradd --uid $USER_UID --gid $USER_GID -m $USERNAME || true \
+        && usermod -aG sudo $USERNAME || true; \
+    fi
 
 # ------------------------------------------------------------
 # Copy TensorRT into container
 # ------------------------------------------------------------
-COPY TensorRT-8.5.1.7 /home/phantom/TensorRT-8.5.1.7
+COPY TensorRT-8.5.1.7 /home/root/TensorRT-8.5.1.7
 
 # ------------------------------------------------------------
 # Mark Git repo as safe
@@ -58,14 +61,14 @@ ENV PATH=/usr/local/cuda/bin:${TENSORRT_ROOT}/bin:${PATH}
 ENV LD_LIBRARY_PATH=/usr/local/cuda/lib64:${TENSORRT_ROOT}/lib:${LD_LIBRARY_PATH}
 
 # ------------------------------------------------------------
-# Append ROS setup and bash completion to phantom's .bashrc
+# Append ROS setup and bash completion to user's .bashrc
 # ------------------------------------------------------------
 RUN echo "source /opt/ros/noetic/setup.bash" >> /home/$USERNAME/.bashrc \
     && echo "if [ -f /etc/bash_completion ]; then . /etc/bash_completion; fi" >> /home/$USERNAME/.bashrc \
     && chown $USERNAME:$USERNAME /home/$USERNAME/.bashrc
 
 # ------------------------------------------------------------
-# Switch to phantom user
+# Switch to root user
 # ------------------------------------------------------------
 USER $USERNAME
 WORKDIR /home/$USERNAME
