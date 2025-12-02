@@ -30,49 +30,32 @@ RUN sh -c 'echo "deb http://packages.ros.org/ros/ubuntu $(lsb_release -sc) main"
 RUN rosdep init || true && rosdep update
 
 # ------------------------------------------------------------
-# Create default user 'phantom' with build-time UID/GID
+# Copy TensorRT into container (accessible by root)
 # ------------------------------------------------------------
-ARG USERNAME=phantom
-ARG USER_UID=1000
-ARG USER_GID=1000
-
-# Only create user/group if not root (root already exists)
-RUN if [ "$USERNAME" != "root" ]; then \
-        groupadd --gid $USER_GID $USERNAME || true \
-        && useradd --uid $USER_UID --gid $USER_GID -m $USERNAME || true \
-        && usermod -aG sudo $USERNAME || true; \
-    fi
-
-# ------------------------------------------------------------
-# Copy TensorRT into container
-# ------------------------------------------------------------
-COPY TensorRT-8.5.1.7 /home/$USERNAME/TensorRT-8.5.1.7
-RUN chown -R $USERNAME:$USERNAME /home/$USERNAME/TensorRT-8.5.1.7
+COPY TensorRT-8.5.1.7 /root/TensorRT-8.5.1.7
 
 # ------------------------------------------------------------
 # Mark Git repo as safe
 # ------------------------------------------------------------
-RUN git config --global --add safe.directory /home/$USERNAME/phantom-os-2 || true
+RUN git config --global --add safe.directory /root/phantom-os-2 || true
 
 # ------------------------------------------------------------
 # Set environment variables for TensorRT
 # ------------------------------------------------------------
-ENV TENSORRT_ROOT=/home/$USERNAME/TensorRT-8.5.1.7
+ENV TENSORRT_ROOT=/root/TensorRT-8.5.1.7
 ENV PATH=/usr/local/cuda/bin:${TENSORRT_ROOT}/bin:${PATH}
 ENV LD_LIBRARY_PATH=/usr/local/cuda/lib64:${TENSORRT_ROOT}/lib:${LD_LIBRARY_PATH}
 
 # ------------------------------------------------------------
-# Append ROS setup and bash completion to user's .bashrc
+# Append ROS setup and bash completion to root's .bashrc
 # ------------------------------------------------------------
-RUN echo "source /opt/ros/noetic/setup.bash" >> /home/$USERNAME/.bashrc \
-    && echo "if [ -f /etc/bash_completion ]; then . /etc/bash_completion; fi" >> /home/$USERNAME/.bashrc \
-    && chown $USERNAME:$USERNAME /home/$USERNAME/.bashrc
+RUN echo "source /opt/ros/noetic/setup.bash" >> /root/.bashrc \
+    && echo "if [ -f /etc/bash_completion ]; then . /etc/bash_completion; fi" >> /root/.bashrc
 
 # ------------------------------------------------------------
-# Switch to user
+# Stay as root user
 # ------------------------------------------------------------
-USER $USERNAME
-WORKDIR /home/$USERNAME
+WORKDIR /root
 
 SHELL ["/bin/bash", "-c"]
 CMD ["bash"]
