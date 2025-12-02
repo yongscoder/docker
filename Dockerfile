@@ -30,9 +30,9 @@ RUN sh -c 'echo "deb http://packages.ros.org/ros/ubuntu $(lsb_release -sc) main"
 RUN rosdep init || true && rosdep update
 
 # ------------------------------------------------------------
-# Create default user 'root' with build-time UID/GID
+# Create default user 'phantom' with build-time UID/GID
 # ------------------------------------------------------------
-ARG USERNAME=root
+ARG USERNAME=phantom
 ARG USER_UID=1000
 ARG USER_GID=1000
 
@@ -46,7 +46,8 @@ RUN if [ "$USERNAME" != "root" ]; then \
 # ------------------------------------------------------------
 # Copy TensorRT into container
 # ------------------------------------------------------------
-COPY TensorRT-8.5.1.7 /home/root/TensorRT-8.5.1.7
+COPY TensorRT-8.5.1.7 /home/$USERNAME/TensorRT-8.5.1.7
+RUN chown -R $USERNAME:$USERNAME /home/$USERNAME/TensorRT-8.5.1.7
 
 # ------------------------------------------------------------
 # Mark Git repo as safe
@@ -68,7 +69,7 @@ RUN echo "source /opt/ros/noetic/setup.bash" >> /home/$USERNAME/.bashrc \
     && chown $USERNAME:$USERNAME /home/$USERNAME/.bashrc
 
 # ------------------------------------------------------------
-# Switch to root user
+# Switch to user
 # ------------------------------------------------------------
 USER $USERNAME
 WORKDIR /home/$USERNAME
