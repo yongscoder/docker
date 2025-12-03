@@ -49,8 +49,44 @@ ENV LD_LIBRARY_PATH=/usr/local/cuda/lib64:${TENSORRT_ROOT}/lib:${LD_LIBRARY_PATH
 # ------------------------------------------------------------
 # Append ROS setup and bash completion to root's .bashrc
 # ------------------------------------------------------------
-RUN echo "source /opt/ros/noetic/setup.bash" >> /root/.bashrc \
-    && echo "if [ -f /etc/bash_completion ]; then . /etc/bash_completion; fi" >> /root/.bashrc
+RUN echo "if [ -f /etc/bash_completion ]; then . /etc/bash_completion; fi" >> /root/.bashrc
+
+# ------------------------------------------------------------
+# Append Phantom OS configuration to root's .bashrc
+# ------------------------------------------------------------
+RUN echo "" >> /root/.bashrc \
+    && echo "############################" >> /root/.bashrc \
+    && echo "# Start of Phantom OS config" >> /root/.bashrc \
+    && echo "############################" >> /root/.bashrc \
+    && echo "" >> /root/.bashrc \
+    && echo "# ROS Path Setup" >> /root/.bashrc \
+    && echo "source /opt/ros/noetic/setup.bash" >> /root/.bashrc \
+    && echo "" >> /root/.bashrc \
+    && echo "# ROS Workspace Path Setup" >> /root/.bashrc \
+    && echo "source /usr/local/phantom-os/setup.bash --extend" >> /root/.bashrc \
+    && echo "" >> /root/.bashrc \
+    && echo "# Phantom OS Env Variable for Param Directory" >> /root/.bashrc \
+    && echo "export PHANTOM_PARAM_DIRECTORY=/usr/local/phantom-os/share/phantom_ros/params" >> /root/.bashrc \
+    && echo "" >> /root/.bashrc \
+    && echo "" >> /root/.bashrc \
+    && echo "# Phantom OS Env Variable For Record Directory (Required by Log Server)" >> /root/.bashrc \
+    && echo "export PHANTOM_RECORD_DIRECTORY=/media/user/logging/recording" >> /root/.bashrc \
+    && echo "" >> /root/.bashrc \
+    && echo "# Phantom OS Env Variable Current Phantom Vehicle (Required by Log Server and Sensor Fusion)" >> /root/.bashrc \
+    && echo "export PHANTOM_VEHICLE=zf_9100" >> /root/.bashrc \
+    && echo "" >> /root/.bashrc \
+    && echo "# Phantom OS Env Variable for Country Code" >> /root/.bashrc \
+    && echo "export PHANTOM_COUNTRY_CODE=usa" >> /root/.bashrc \
+    && echo "" >> /root/.bashrc \
+    && echo "# Phantom OS Env Variables for Remote Logging PC (Required on both machines if using remote logging PC. Also requires setup in launch files)" >> /root/.bashrc \
+    && echo "export PHANTOM_UDP_LOGGING_ENABLED=false" >> /root/.bashrc \
+    && echo "" >> /root/.bashrc \
+    && echo "# Set ROS_PACKAGE_PATH based on ROS distribution" >> /root/.bashrc \
+    && echo "export ROS_PACKAGE_PATH=/usr/local/phantom-os/share/phantom_ros:/opt/ros/noetic/share" >> /root/.bashrc \
+    && echo "" >> /root/.bashrc \
+    && echo "############################" >> /root/.bashrc \
+    && echo "# End of Phantom OS config" >> /root/.bashrc \
+    && echo "############################" >> /root/.bashrc
 
 # ------------------------------------------------------------
 # Stay as root user
