@@ -26,6 +26,14 @@ fi
 
 echo "Creating and starting new container: $CONTAINER_NAME using image: $IMAGE_NAME"
 
+# Enable X11 forwarding for GUI applications
+xhost +local:docker 2>/dev/null || true
+
 docker run -it --user root --gpus all \
     --name $CONTAINER_NAME \
+    --network host \
+    --privileged \
+    -e DISPLAY=$DISPLAY \
+    -v /tmp/.X11-unix:/tmp/.X11-unix:rw \
+    -v /dev:/dev \
     $IMAGE_NAME /bin/bash
