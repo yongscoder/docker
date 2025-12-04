@@ -19,7 +19,8 @@ if [ "$(docker ps -aq -f name=^${CONTAINER_NAME}$)" ]; then
         exit 0
     else
         echo "Starting existing container: $CONTAINER_NAME"
-        docker start -ai $CONTAINER_NAME
+        docker start $CONTAINER_NAME
+        docker exec -it $CONTAINER_NAME /bin/bash
         exit 0
     fi
 fi
@@ -29,11 +30,14 @@ echo "Creating and starting new container: $CONTAINER_NAME using image: $IMAGE_N
 # Enable X11 forwarding for GUI applications
 xhost +local:docker 2>/dev/null || true
 
-docker run -it --user root --gpus all \
+docker run -itd --user root --gpus all \
     --name $CONTAINER_NAME \
     --network host \
     --privileged \
     -e DISPLAY=$DISPLAY \
     -v /tmp/.X11-unix:/tmp/.X11-unix:rw \
     -v /dev:/dev \
-    $IMAGE_NAME /bin/bash
+    $IMAGE_NAME /bin/bash -c "tail -f /dev/null"
+
+echo "Container started in background. Connecting..."
+docker exec -it $CONTAINER_NAME /bin/bash
