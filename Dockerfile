@@ -89,6 +89,14 @@ RUN echo "" >> /root/.bashrc \
     && echo "############################" >> /root/.bashrc
 
 # ------------------------------------------------------------
+# Install additional dependencies
+# ------------------------------------------------------------
+RUN apt-get update && apt-get upgrade -y && \
+    apt-get install -y sshpass net-tools libboost-all-dev libopenblas-dev libopencv-dev \
+                       libyaml-cpp-dev qtbase5-dev qtdeclarative5-dev && \
+    rm -rf /var/lib/apt/lists/*
+
+# ------------------------------------------------------------
 # Stay as root user
 # ------------------------------------------------------------
 WORKDIR /root
