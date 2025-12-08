@@ -1,13 +1,34 @@
 #!/bin/bash
 
 # Usage check
-if [ -z "$1" ] || [ -z "$2" ]; then
-    echo "Usage: $0 <container_name> <image_name>"
+if [ -z "$1" ]; then
+    echo "Usage: $0 <container_name> [image_name]"
+    echo ""
+    echo "If image_name is provided, creates a new container."
+    echo "If only container_name is provided, connects to existing container."
+    echo ""
+    echo "Available running containers:"
+    docker ps --format "table {{.Names}}\t{{.Status}}\t{{.Image}}"
     exit 1
 fi
 
 CONTAINER_NAME=$1
 IMAGE_NAME=$2
+
+# If no image name provided, try to exec into existing container
+if [ -z "$IMAGE_NAME" ]; then
+    if docker ps --format '{{.Names}}' | grep -q "^${CONTAINER_NAME}$"; then
+        echo "Executing into container: ${CONTAINER_NAME}"
+        docker exec -it ${CONTAINER_NAME} /bin/bash
+        exit 0
+    else
+        echo "Error: Container '${CONTAINER_NAME}' is not running"
+        echo ""
+        echo "Available running containers:"
+        docker ps --format "table {{.Names}}\t{{.Status}}\t{{.Image}}"
+        exit 1
+    fi
+fi
 
 # Check if container already exists
 if [ "$(docker ps -aq -f name=^${CONTAINER_NAME}$)" ]; then
@@ -15,7 +36,8 @@ if [ "$(docker ps -aq -f name=^${CONTAINER_NAME}$)" ]; then
 
     # Check if it's running
     if [ "$(docker ps -q -f name=^${CONTAINER_NAME}$)" ]; then
-        echo "Container is already running. Use './exec_docker.sh $CONTAINER_NAME' to attach to it."
+        echo "Container is already running. Connecting to it..."
+        docker exec -it $CONTAINER_NAME /bin/bash
         exit 0
     else
         echo "Starting existing container: $CONTAINER_NAME"
