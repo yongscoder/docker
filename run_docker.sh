@@ -37,6 +37,7 @@ docker run -itd --user root --gpus all \
     -e DISPLAY=$DISPLAY \
     -v /tmp/.X11-unix:/tmp/.X11-unix:rw \
     -v /dev:/dev \
+    -v /usr/local/phantom-os:/usr/local/phantom-os:rw \
     $IMAGE_NAME /bin/bash -c "tail -f /dev/null"
 
 echo "Container started in background. Connecting..."
