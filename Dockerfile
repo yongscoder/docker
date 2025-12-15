@@ -8,7 +8,8 @@ ENV DEBIAN_FRONTEND=noninteractive
 # ------------------------------------------------------------
 # Common dependencies + CarMaker GUI/OpenGL libs
 # ------------------------------------------------------------
-RUN apt-get update && apt-get install -y \
+RUN apt-get clean && rm -rf /var/lib/apt/lists/* && \
+    apt-get update && apt-get install -y \
     build-essential cmake git wget curl unzip \
     lsb-release gnupg2 sudo vim software-properties-common \
     python3 python3-pip \
@@ -33,6 +34,11 @@ RUN rosdep init || true && rosdep update
 # Copy TensorRT into container (accessible by root)
 # ------------------------------------------------------------
 COPY TensorRT-8.5.1.7 /root/TensorRT-8.5.1.7
+
+# ------------------------------------------------------------
+# Copy pk_x86_251021 into container
+# ------------------------------------------------------------
+COPY pk_x86_251021 /root/pk_x86_251021
 
 # ------------------------------------------------------------
 # Mark Git repo as safe
